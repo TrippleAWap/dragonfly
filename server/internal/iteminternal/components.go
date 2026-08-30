@@ -73,9 +73,6 @@ func Components(it world.CustomItem) (map[string]any, error) {
 			"category": name,
 			"duration": float32(x.Cooldown().Seconds()),
 		}
-		if y, ok := it.(item.CooldownTyped); ok {
-			cooldown["type"] = y.CooldownType()
-		}
 		builder.AddComponent("minecraft:cooldown", cooldown)
 	}
 	if x, ok := it.(item.Durable); ok {
@@ -83,10 +80,6 @@ func Components(it world.CustomItem) (map[string]any, error) {
 		damageChance := map[string]any{
 			"min": int32(100),
 			"max": int32(100),
-		}
-		if info.DamageChance != [2]int{} {
-			damageChance["min"] = int32(info.DamageChance[0])
-			damageChance["max"] = int32(info.DamageChance[1])
 		}
 		builder.AddComponent("minecraft:durability", map[string]any{
 			"max_durability": int32(info.MaxDurability),
@@ -99,42 +92,13 @@ func Components(it world.CustomItem) (map[string]any, error) {
 	if x, ok := it.(item.OffHand); ok {
 		builder.AddProperty("allow_off_hand", x.OffHand())
 	}
-	if x, ok := it.(item.StackedByData); ok {
-		builder.AddProperty("stacked_by_data", x.StackedByData())
-	}
-	if x, ok := it.(item.MiningSpeed); ok {
-		builder.AddProperty("mining_speed", float32(x.MiningSpeed()))
-	}
-	if x, ok := it.(item.FrameCount); ok {
-		builder.AddProperty("frame_count", int32(x.FrameCount()))
-	}
-	if x, ok := it.(item.CanDestroyInCreative); ok {
-		builder.AddProperty("can_destroy_in_creative", x.CanDestroyInCreative())
-	}
 	if _, ok := it.(item.Throwable); ok {
 		builder.AddComponent("minecraft:projectile", map[string]any{})
 	}
 	if x, ok := it.(item.Throwable); ok {
-		info := x.ThrowableInfo()
-		throwable := map[string]any{
-			"do_swing_animation": info.SwingAnimation,
-		}
-		if info.LaunchPowerScale != 0 {
-			throwable["launch_power_scale"] = float32(info.LaunchPowerScale)
-		}
-		if info.MaxDrawDuration != 0 {
-			throwable["max_draw_duration"] = float32(info.MaxDrawDuration)
-		}
-		if info.MaxLaunchPower != 0 {
-			throwable["max_launch_power"] = float32(info.MaxLaunchPower)
-		}
-		if info.MinDrawDuration != 0 {
-			throwable["min_draw_duration"] = float32(info.MinDrawDuration)
-		}
-		if info.ScalePowerByDrawDuration {
-			throwable["scale_power_by_draw_duration"] = true
-		}
-		builder.AddComponent("minecraft:throwable", throwable)
+		builder.AddComponent("minecraft:throwable", map[string]any{
+			"do_swing_animation": x.SwingAnimation(),
+		})
 	}
 	if x, ok := it.(item.Glinted); ok {
 		builder.AddComponent("minecraft:glint", map[string]any{
