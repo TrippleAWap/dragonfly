@@ -62,6 +62,10 @@ func Components(it world.CustomItem) (map[string]any, error) {
 	}
 	if x, ok := it.(item.Consumable); ok {
 		builder.AddProperty("use_duration", int32(x.ConsumeDuration().Seconds()*20))
+		builder.AddComponent("minecraft:food", map[string]any{
+			"can_always_eat": x.AlwaysConsumable(),
+		})
+
 		if y, ok := it.(item.Drinkable); ok && y.Drinkable() {
 			builder.AddProperty("use_animation", int32(2))
 		} else {
@@ -69,21 +73,18 @@ func Components(it world.CustomItem) (map[string]any, error) {
 		}
 	}
 	if x, ok := it.(item.Cooldown); ok {
-		cooldown := map[string]any{
+		builder.AddComponent("minecraft:cooldown", map[string]any{
 			"category": name,
 			"duration": float32(x.Cooldown().Seconds()),
-		}
-		builder.AddComponent("minecraft:cooldown", cooldown)
+		})
 	}
 	if x, ok := it.(item.Durable); ok {
-		info := x.DurabilityInfo()
-		damageChance := map[string]any{
-			"min": int32(100),
-			"max": int32(100),
-		}
 		builder.AddComponent("minecraft:durability", map[string]any{
-			"max_durability": int32(info.MaxDurability),
-			"damage_chance":  damageChance,
+			"max_durability": int32(x.DurabilityInfo().MaxDurability),
+			"damage_chance": map[string]any{
+				"min": int32(100),
+				"max": int32(100),
+			},
 		})
 	}
 	if x, ok := it.(item.MaxCounter); ok {
@@ -93,6 +94,8 @@ func Components(it world.CustomItem) (map[string]any, error) {
 		builder.AddProperty("allow_off_hand", x.OffHand())
 	}
 	if _, ok := it.(item.Throwable); ok {
+		// The data in minecraft:projectile is only used by vanilla server-side, but we must send at least an empty map
+		// so the client will play the throwing animation.
 		builder.AddComponent("minecraft:projectile", map[string]any{})
 	}
 	if x, ok := it.(item.Throwable); ok {
